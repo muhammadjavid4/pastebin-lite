@@ -107,6 +107,60 @@
 // }
 
 
+// import { notFound } from "next/navigation";
+
+// type PasteResponse = {
+//   content: string;
+//   remaining_views: number | null;
+//   expires_at: string | null;
+// };
+
+// async function getPaste(id: string): Promise<PasteResponse> {
+//   const res = await fetch(`http://localhost:3000/api/pastes/${id}`, {
+//     cache: "no-store",
+//   });
+
+//   if (!res.ok) {
+//     notFound();
+//   }
+
+//   return res.json();
+// }
+
+// export default async function PastePage({
+//   params,
+// }: {
+//   params: Promise<{ id: string }>;
+// }) {
+//   // ✅ THIS IS THE FIX
+//   const { id } = await params;
+
+//   const paste = await getPaste(id);
+
+//   return (
+//     <main style={{ padding: "2rem", maxWidth: 800, margin: "auto" }}>
+//       <h1>Paste</h1>
+
+//       <pre
+//         style={{
+//           marginTop: "1rem",
+//           padding: "1rem",
+//           background: "#f5f5f5",
+//           whiteSpace: "pre-wrap",
+//           wordBreak: "break-word",
+//         }}
+//       >
+//         {paste.content}
+//       </pre>
+
+//       {paste.remaining_views !== null && (
+//         <p>Remaining views: {paste.remaining_views}</p>
+//       )}
+//     </main>
+//   );
+// }
+
+
 import { notFound } from "next/navigation";
 
 type PasteResponse = {
@@ -116,7 +170,8 @@ type PasteResponse = {
 };
 
 async function getPaste(id: string): Promise<PasteResponse> {
-  const res = await fetch(`http://localhost:3000/api/pastes/${id}`, {
+  // ✅ RELATIVE URL (works locally + on Vercel)
+  const res = await fetch(`/api/pastes/${id}`, {
     cache: "no-store",
   });
 
@@ -132,7 +187,7 @@ export default async function PastePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // ✅ THIS IS THE FIX
+  // ✅ Next.js App Router: params is async
   const { id } = await params;
 
   const paste = await getPaste(id);
@@ -156,6 +211,11 @@ export default async function PastePage({
       {paste.remaining_views !== null && (
         <p>Remaining views: {paste.remaining_views}</p>
       )}
+
+      {paste.expires_at && (
+        <p>Expires at: {new Date(paste.expires_at).toLocaleString()}</p>
+      )}
     </main>
   );
 }
+

@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pastebin Lite
 
-## Getting Started
+A simple Pastebin-like application where users can create text pastes and share a link to view them.
+Pastes can optionally expire based on time (TTL) or view count.
 
-First, run the development server:
+This project is built as part of a take-home assessment.
 
-```bash
+---
+
+## Features
+
+- Create a paste with arbitrary text
+- Get a shareable URL for the paste
+- View paste content via browser
+- Optional constraints:
+  - Time-based expiry (TTL)
+  - View count limit
+- Automatic expiry when any constraint is triggered
+- Deterministic time support for testing
+- Serverless-safe persistent storage
+
+---
+
+## Tech Stack
+
+- **Next.js (App Router)**
+- **TypeScript**
+- **Upstash Redis** (persistence layer)
+- **Vercel** (deployment)
+
+---
+
+## API Endpoints
+
+### Health Check
+
+GET /api/healthz
+
+
+Response:
+```json
+{ "ok": true }
+
+Create Paste
+POST /api/pastes
+
+
+Request body:
+
+{
+  "content": "Hello world",
+  "ttl_seconds": 60,
+  "max_views": 5
+}
+
+
+Response:
+
+{
+  "id": "abc123",
+  "url": "https://your-app.vercel.app/p/abc123"
+}
+
+Fetch Paste (API)
+GET /api/pastes/:id
+
+
+Response:
+
+{
+  "content": "Hello world",
+  "remaining_views": 4,
+  "expires_at": "2026-01-01T00:00:00.000Z"
+}
+
+
+Each successful fetch counts as a view.
+
+Deterministic Time (Testing)
+
+If TEST_MODE=1 is set, the application uses the request header:
+
+x-test-now-ms: <milliseconds since epoch>
+
+
+as the current time for expiry logic.
+
+Persistence Layer
+
+The application uses Upstash Redis as a persistence layer.
+This ensures data survives across requests in a serverless environment such as Vercel.
+
+Running Locally
+1. Install dependencies
+npm install
+
+2. Create .env.local
+UPSTASH_REDIS_REST_URL=your_upstash_url
+UPSTASH_REDIS_REST_TOKEN=your_upstash_token
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+TEST_MODE=0
+
+3. Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+http://localhost:3000
 
-## Learn More
+Deployment
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The app is designed to be deployed on Vercel with no manual migrations required.
+--------------------------------------------------------------------------------
